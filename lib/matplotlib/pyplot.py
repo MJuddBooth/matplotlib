@@ -84,17 +84,26 @@ def _backend_selection():
         import wx
         if wx.App.IsMainLoopRunning():
             rcParams['backend'] = 'wx' + 'Agg' * is_agg_backend
-    elif 'PyQt4.QtCore' in sys.modules and not backend == 'Qt4Agg':
-        import PyQt4.QtGui
-        if not PyQt4.QtGui.qApp.startingUp():
-            # The mainloop is running.
-            rcParams['backend'] = 'qt4Agg'
-    elif 'PyQt5.QtCore' in sys.modules and not backend == 'Qt5Agg':
-        import PyQt5.QtWidgets
-        if not PyQt5.QtWidgets.qApp.startingUp():
-            # The mainloop is running.
-            rcParams['backend'] = 'qt5Agg'
-    elif ('gtk' in sys.modules and
+            return
+    if 'PyQt4.QtCore' in sys.modules and not backend == 'Qt4Agg':
+        try: # if PyQt5 loaded this will fail
+            import PyQt4.QtGui
+            if not PyQt4.QtGui.qApp.startingUp():
+                # The mainloop is running.
+                rcParams['backend'] = 'qt4Agg'
+                return
+        except:
+            pass
+    if 'PyQt5.QtCore' in sys.modules and not backend == 'Qt5Agg':
+        try:
+            import PyQt5.QtWidgets
+            if not PyQt5.QtWidgets.qApp.startingUp():
+                # The mainloop is running.
+                rcParams['backend'] = 'qt5Agg'
+                return
+        except:
+            pass
+    if ('gtk' in sys.modules and
           backend not in ('GTK', 'GTKAgg', 'GTKCairo')):
         if 'gi' in sys.modules:
             from gi.repository import GObject
@@ -104,7 +113,8 @@ def _backend_selection():
             ml = gobject.MainLoop
         if ml().is_running():
             rcParams['backend'] = 'gtk' + 'Agg' * is_agg_backend
-    elif 'Tkinter' in sys.modules and not backend == 'TkAgg':
+            return
+    if 'Tkinter' in sys.modules and not backend == 'TkAgg':
         # import Tkinter
         pass  # what if anything do we need to do for tkinter?
 
